@@ -2,17 +2,20 @@ package br.com.zhant.cm.modelo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 
-public class Tabuleiro {
+public class Tabuleiro implements CampoObservador{
 
 	private int linhas;
 	private int colunas;
 	private int minas;
 	
 	private final List<Campo> campos = new ArrayList<>();//Cria um array de campos, fazendo assim o tabuleiro
-
+	private final List<Consumer<ResultadoEvento>> observadores = new ArrayList<Consumer<ResultadoEvento>>();
+	
+	
 	public Tabuleiro(int linhas, int colunas, int minas) {
 		this.linhas = linhas;
 		this.colunas = colunas;
@@ -23,28 +26,38 @@ public class Tabuleiro {
 		sortearMinas();
 	}
 	
-	public void abrir(int linha, int coluna) {
-		try {//Caso atenda as expectativas ele realiza a função, pegando a linha e a coluna
-			campos.stream()
-				.filter(c -> c.getLinha() == linha && c.getColuna() == coluna)
-					.findFirst()
-						.ifPresent(c -> c.abrir());;
-		} catch (Exception e) {//no momento da explosão abre todo o quadro do campo minado para identificar as bombas
-			campos.forEach(c -> c.setAberto(true));
-			throw e;
-		}
+	public void registrarObservador(Consumer<ResultadoEvento> observador) {
+		observadores.add(observador);
 	}
-	public void alterarMarcacao(int linha, int coluna) {//Mesma função acima, porém realiza a marcação no lugar de abrir
+	
+	private void notificarObservadores(boolean resultado) {
+		observadores.stream()
+			.forEach(obs -> obs.accept(new ResultadoEvento(resultado)));
+	}
+	
+	public void abrir(int linha, int coluna) {
 		campos.stream()
+			.filter(c -> c.getLinha() == linha && c.getColuna() == coluna)
+				.findFirst()
+					.ifPresent(c -> c.abrir());;
+
+	}
+	
+	
+	
+	public void alterarMarcacao(int linha, int coluna) {//Mesma função acima, porém realiza a marcação no lugar de abrir
+		campos.parallelStream()
 			.filter(c -> c.getLinha() == linha && c.getColuna() == coluna)
 				.findFirst()
 					.ifPresent(c -> c.alterarMarcacao());;
 	}
 	
 	private void gerarCampos() {//Gera campos de acordo com a quantidade de linhas e colunas. 
-		for(int l = 0; l < linhas; l++) {
-			for(int c = 0; c < colunas; c++) {
-				campos.add(new Campo(l, c));
+		for(int linha = 0; linha < linhas; linha++) {
+			for(int coluna = 0; coluna < colunas; coluna++) {
+				Campo campo = new Campo(linha, coluna);
+				campo.registrarObservador(this);
+				campos.add(campo);
 			}
 		}
 	}
@@ -75,6 +88,25 @@ public class Tabuleiro {
 	public void reiniciar() {
 		campos.stream().forEach(c-> c.reinciar());
 		sortearMinas();
+	}
+
+	@Override
+	public void eventoOcorreu(Campo campo, CampoEvento evento) {
+		if(evento == CampoEvento.EXPLODIR) {
+			mostrarMinas();
+			System.out.println("Perdeu haha");
+			notificarObservadores(false);
+		}else if(objetivoAlcancado()){
+			System.out.println("Nao perdeu :(((((");
+			notificarObservadores(true);
+		}
+		
+	}
+	
+	private void mostrarMinas() {
+		campos.stream()
+			.filter(c -> c.isMinado())
+				.forEach(c -> c.setAberto(true));
 	}
 	
 }
