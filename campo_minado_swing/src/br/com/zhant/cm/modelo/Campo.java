@@ -14,10 +14,22 @@ public class Campo {
 	private final int coluna;
 	
 	private List<Campo> vizinhos = new ArrayList<>(); 
+	private List<CampoObservador> observadores = new ArrayList<>();
+	//private List<BiConsumer<Campo, CampoEvento>> observadores2 = new ArrayList<BiConsumer<Campo,CampoEvento>>();
+	
 	
 	public Campo(int linha, int coluna) {
 		this.linha = linha;
 		this.coluna = coluna;
+	}
+	
+	public void registrarObservador(CampoObservador observador) {
+		observadores.add(observador);
+	}
+	
+	private void notificarObservadores(CampoEvento evento) {
+		observadores.stream()
+			.forEach(obs -> obs.eventoOcorreu(this, evento));
 	}
 	
 	boolean adicionarVizinho(Campo vizinho) {
@@ -44,16 +56,24 @@ public class Campo {
 		void alterarMarcacao(){//Confere se o bloco está aberto antes, caso não esteja ele realiza a marcação
 			if(!aberto) {
 				marcado = !marcado;
+				
+				if(marcado) {
+					notificarObservadores(CampoEvento.MARCAR);
+				}else {
+					notificarObservadores(CampoEvento.DESMARCAR);
+				}
 			}
 		}
 
 		boolean abrir() {//Confere se está aberto ou marcado, caso não esteja ele realiza a função, caso esteja minado chama a explosão
 			if (!aberto && !marcado) {
-				aberto = true;
-	 
 				if (minado) {
-					//TODO implementar nova versão
+					notificarObservadores(CampoEvento.EXPLODIR);
+					return true;
 				}
+				
+				setAberto(true);
+				
 				if (vizinhacaSegura()) {//Abre enquanto a vizinhança estiver segura
 					vizinhos.forEach(v -> v.abrir());
 				}
@@ -97,6 +117,9 @@ public class Campo {
 		
 		void setAberto(boolean aberto) {
 			this.aberto = aberto;
+			if(aberto) {
+				notificarObservadores(CampoEvento.ABRIR);
+			}
 		}
 
 		public boolean isFechado() {
