@@ -17,7 +17,7 @@ public class BotaoCampo extends JButton implements CampoObservador, MouseListene
 	private Campo campo;
 	
 	private final Color BG_PADRAO = new Color(184, 184, 184);//cinza
-	private final Color BG_MARCADO = new Color(8, 179, 247);//
+	private final Color BG_MARCADO = new Color(8, 179, 247);//azul
 	private final Color BG_EXPLOSAO = new Color(189, 66, 68);//vermelho
 	private final Color TEXTO_VERDE = new Color(0, 100, 0);//verde
 
@@ -25,6 +25,7 @@ public class BotaoCampo extends JButton implements CampoObservador, MouseListene
 		this.campo = campo;
 		setBackground(BG_PADRAO);//definindo cor de fundo
 		setBorder(BorderFactory.createBevelBorder(0));//define tipo de borda
+		setOpaque(true);
 		addMouseListener(this);
 		campo.registrarObservador(this);
 	}
@@ -49,16 +50,28 @@ public class BotaoCampo extends JButton implements CampoObservador, MouseListene
 
 	private void aplicarEstiloPadrao() {
 		setBackground(BG_PADRAO);
+		
+		setText("");
 	}
 	private void aplicaEstiloMarcar() {
 		setBackground(BG_MARCADO);
+		setForeground(Color.WHITE);
+		setText("M");
 	}
 	private void aplicaEstiloExplodir() {
 		setBackground(BG_EXPLOSAO);
+		setForeground(Color.WHITE);
+		setText("X");
 	}
 	private void aplicaEstiloAbrir() {
-		setBackground(BG_PADRAO);
+		
 		setBorder(BorderFactory.createLineBorder(Color.GRAY));
+		
+		if(campo.isMinado()) {
+			setBackground(BG_EXPLOSAO);
+			return;
+		}
+		setBackground(BG_PADRAO);
 		
 		switch (campo.minasNaVizinhanca()) {
 		case 1:

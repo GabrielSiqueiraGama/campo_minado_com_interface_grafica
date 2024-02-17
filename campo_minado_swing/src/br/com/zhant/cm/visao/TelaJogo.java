@@ -8,7 +8,7 @@ import br.com.zhant.cm.modelo.Tabuleiro;
 public class TelaJogo extends JFrame{
 
 	public TelaJogo() {
-		Tabuleiro tabuleiro = new Tabuleiro(16, 30, 50);
+		Tabuleiro tabuleiro = new Tabuleiro(20, 30, 2);
 		 
 		add(new PainelTabuleiro(tabuleiro));
 		
