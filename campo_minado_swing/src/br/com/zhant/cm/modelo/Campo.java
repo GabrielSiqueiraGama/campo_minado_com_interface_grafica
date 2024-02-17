@@ -53,7 +53,7 @@ public class Campo {
 			}
 		}
 		
-		void alterarMarcacao(){//Confere se o bloco está aberto antes, caso não esteja ele realiza a marcação
+		public void alterarMarcacao(){//Confere se o bloco está aberto antes, caso não esteja ele realiza a marcação
 			if(!aberto) {
 				marcado = !marcado;
 				
@@ -65,7 +65,7 @@ public class Campo {
 			}
 		}
 
-		boolean abrir() {//Confere se está aberto ou marcado, caso não esteja ele realiza a função, caso esteja minado chama a explosão
+		public boolean abrir() {//Confere se está aberto ou marcado, caso não esteja ele realiza a função, caso esteja minado chama a explosão
 			if (!aberto && !marcado) {
 				if (minado) {
 					notificarObservadores(CampoEvento.EXPLODIR);
@@ -92,8 +92,8 @@ public class Campo {
 			boolean protegido = minado && marcado;
 			return desvendado || protegido;
 		}
-		long minasNaVizinhanca() {
-			return vizinhos.stream().filter(v -> v.minado).count();
+		public int minasNaVizinhanca() {
+			return (int) vizinhos.stream().filter(v -> v.minado).count();
 		}
 		void reinciar() {//seta todas as variaveis iniciais
 			aberto = false;
@@ -101,7 +101,7 @@ public class Campo {
 			marcado = false;
 		}
 		
-		boolean vizinhacaSegura() {//Define como vizinhança segura desde que não esteja minado
+		public boolean vizinhacaSegura() {//Define como vizinhança segura desde que não esteja minado
 			return vizinhos.stream().noneMatch(v -> v.minado);
 		}
 		
