@@ -99,6 +99,7 @@ public class Campo {
 			aberto = false;
 			minado = false;
 			marcado = false;
+			notificarObservadores(CampoEvento.REINICIAR);
 		}
 		
 		public boolean vizinhacaSegura() {//Define como vizinhança segura desde que não esteja minado
